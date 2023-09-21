@@ -7,8 +7,9 @@ public class CharacterInputController : GameCharacterController
 {
     private Camera _camera;
 
-    public void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         _camera = Camera.main;
     }
 

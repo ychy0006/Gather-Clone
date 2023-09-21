@@ -6,20 +6,24 @@ using System;
 public class Movement : MonoBehaviour
 {
     private GameCharacterController _controller;
+    private CharacterStatsHandler _stats;
     public Animator anim;
 
     private Vector2 _movementDirection = Vector2.zero;
     private Rigidbody2D _rigidbody;
 
+    private Vector2 _knockback = Vector2.zero;
+    private float knockbackDuration = 0.0f;
+
     private void Awake()
     {
         _controller = GetComponent<GameCharacterController>();
+        _stats = GetComponent<CharacterStatsHandler>();
         _rigidbody = GetComponent<Rigidbody2D>();
     }
     private void Start()
     {
         _controller.OnMoveEvent += Move;
-        _controller.OnMoveEvent += Run;
     }
     private void Move(Vector2 direction)
     {
@@ -28,15 +32,24 @@ public class Movement : MonoBehaviour
     private void FixedUpdate()
     {
         ApplyMovement(_movementDirection);
+        if (knockbackDuration > 0.0f)
+        {
+            knockbackDuration -= Time.fixedDeltaTime;
+        }
     }
+
     private void ApplyMovement(Vector2 direction)
     {
-        direction = direction * 5;
+        direction = direction * _stats.CurrentStates.speed;
+        if(knockbackDuration > 0.0f)
+        {
+            direction += _knockback;
+        }
         _rigidbody.velocity = direction;
     }
-    private void Run(Vector2 direction)
+    public void ApplyKnockback(Transform other, float power, float duration)
     {
-        if (direction != Vector2.zero) anim.SetBool("running", true);
-        else anim.SetBool("running", false);
+        knockbackDuration = duration;
+        _knockback = -(other.position - transform.position).normalized * power;
     }
 }
